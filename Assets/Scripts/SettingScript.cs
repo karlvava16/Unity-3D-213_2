@@ -6,13 +6,16 @@ public class SettingScript : MonoBehaviour
 {
     private GameObject content;
     private Slider effectsVolumeSlider;
+    private Slider ambientVolumeSlider;
 
     void Start()
     {
         Transform contentTransform = transform.Find("Content");
         content = contentTransform.gameObject;
         effectsVolumeSlider = contentTransform.Find("EffectsSlider").GetComponent<Slider>();
+        ambientVolumeSlider = contentTransform.Find("AmbientSlider").GetComponent<Slider>();
         GameState.effectsVolume = effectsVolumeSlider.value;
+        GameState.ambientVolume = ambientVolumeSlider.value;
         Time.timeScale = content.activeInHierarchy ? 0.0f : 1.0f;
     }
 
@@ -27,4 +30,7 @@ public class SettingScript : MonoBehaviour
         }
     }
     public void OnEffectsVolumeChanged(Single value) => GameState.effectsVolume = value;
+    public void OnAmbientVolumeChanged(Single value) => GameState.ambientVolume = value;
+    public void OnMuteAllChanged(bool value) => GameState.isMuted = value;
+
 }

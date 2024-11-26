@@ -4,10 +4,16 @@ public class CharacterScript : MonoBehaviour
 {
     private GameObject player;
     private Rigidbody playerRb;
+    private AudioSource ambientSound;
     void Start()
     {
         player = GameObject.Find("CharacterPlayer");
         playerRb = player.GetComponent<Rigidbody>();
+        ambientSound = GetComponent<AudioSource>();
+        GameState.Subscribe(nameof(GameState.ambientVolume), OnAmbientVolumeChanged);
+        GameState.Subscribe(nameof(GameState.ambientVolume), OnMuteChanged);
+
+        OnAmbientVolumeChanged();
     }
 
     void Update()
@@ -23,5 +29,23 @@ public class CharacterScript : MonoBehaviour
         //    player.transform.eulerAngles.y - v,
         //    player.transform.eulerAngles.z
         //    );
+    }
+
+
+    private void OnAmbientVolumeChanged()
+    {
+        ambientSound.volume = GameState.isMuted ? 0.0f : GameState.ambientVolume;
+    }
+
+    private void OnMuteChanged()
+    {
+        ambientSound.volume = GameState.isMuted ? 0.0f : GameState.ambientVolume;
+    }
+
+    private void OnDestroy()
+    {
+        GameState.UnSubscribe(nameof(GameState.ambientVolume), OnAmbientVolumeChanged);
+        GameState.UnSubscribe(nameof(GameState.ambientVolume), OnMuteChanged);
+
     }
 }

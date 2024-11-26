@@ -28,7 +28,7 @@ public class CameraScript : MonoBehaviour
     {
         if (fpv)
         {
-            Vector2 mouseWheel = Input.mouseScrollDelta;
+            Vector2 mouseWheel = Input.mouseScrollDelta * Time.timeScale;
             if (mouseWheel.y != 0)
             {
                 if (c.magnitude > maxDistance)
@@ -65,7 +65,7 @@ public class CameraScript : MonoBehaviour
             }
             this.transform.eulerAngles = new Vector3(mY, mX, 0);
         }
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab) && Time.timeScale != 0.0f)
         {
             fpv = !fpv;
             if (!fpv)
