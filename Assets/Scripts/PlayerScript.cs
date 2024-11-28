@@ -15,7 +15,7 @@ public class PlayerScript : MonoBehaviour
         moveAction = InputSystem.actions.FindAction("Move");
         rb = GetComponent<Rigidbody>();
         hitlSound = GetComponent<AudioSource>();
-        GameState.Subscribe(nameof(GameState.effectsVolume), OnEffectsVolumeChanged);
+        GameState.Subscribe(OnEffectsVolumeChanged, nameof(GameState.effectsVolume), nameof(GameState.isMuted));
         OnEffectsVolumeChanged();
     }
 
@@ -49,12 +49,13 @@ correctedForward * moveValue.y);
 
     private void OnEffectsVolumeChanged()
     {
-        hitlSound.volume = GameState.effectsVolume;
+        hitlSound.volume = GameState.isMuted ? 0.0f : GameState.effectsVolume;
     }
 
 
     private void OnDestroy()
     {
-        GameState.UnSubscribe(nameof(GameState.effectsVolume), OnDestroy);
+        GameState.UnSubscribe(OnDestroy, nameof(GameState.effectsVolume), nameof(GameState.isMuted));
+
     }
 }

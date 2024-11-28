@@ -22,6 +22,16 @@ public class CameraScript : MonoBehaviour
         mX = this.transform.eulerAngles.y;
         mY = this.transform.eulerAngles.x;
         lookAction = InputSystem.actions.FindAction("Look");
+        GameState.Subscribe(OnSensitivityChanged,
+        nameof(GameState.sensitivityLookX),
+        nameof(GameState.sensitivityLookY));
+    }
+
+    private void OnSensitivityChanged()
+    {
+        // [0 .. 0,5 .. 1] -> [1 .. 10 .. 20] ([1 .. 10,5 .. 20])
+        sensitivityH = Mathf.Lerp(1, 20, GameState.sensitivityLookX);
+        sensitivityV = Mathf.Lerp(1, 20, GameState.sensitivityLookY);
     }
 
     private void Update()
@@ -83,5 +93,12 @@ public class CameraScript : MonoBehaviour
             this.transform.position = Quaternion.Euler(0, mX, 0) * c +
                 player.transform.position;
         }
+    }
+
+    private void OnDestroy()
+    {
+        GameState.UnSubscribe(OnSensitivityChanged,
+        nameof(GameState.sensitivityLookX),
+        nameof(GameState.sensitivityLookY));
     }
 }

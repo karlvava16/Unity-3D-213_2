@@ -10,9 +10,9 @@ public class CharacterScript : MonoBehaviour
         player = GameObject.Find("CharacterPlayer");
         playerRb = player.GetComponent<Rigidbody>();
         ambientSound = GetComponent<AudioSource>();
-        GameState.Subscribe(nameof(GameState.ambientVolume), OnAmbientVolumeChanged);
-        GameState.Subscribe(nameof(GameState.ambientVolume), OnMuteChanged);
-
+        GameState.Subscribe(OnAmbientVolumeChanged,
+        nameof(GameState.ambientVolume),
+        nameof(GameState.isMuted));
         OnAmbientVolumeChanged();
     }
 
@@ -44,8 +44,7 @@ public class CharacterScript : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameState.UnSubscribe(nameof(GameState.ambientVolume), OnAmbientVolumeChanged);
-        GameState.UnSubscribe(nameof(GameState.ambientVolume), OnMuteChanged);
+        GameState.UnSubscribe(OnAmbientVolumeChanged, nameof(GameState.ambientVolume), nameof(GameState.ambientVolume));
 
     }
 }
