@@ -27,6 +27,16 @@ namespace Assets.Scripts
 
         void Update()
         {
+            if (openTime > 0.0f && !isLocked && !isOpen)
+            {
+                openTime -= Time.deltaTime;
+                this.transform.Translate(Time.deltaTime / timeout * Vector3.forward);
+                if (openTime <= 0.0f)
+                {
+                    isOpen = true;
+                }
+            }
+
         }
 
         private void OnCollisionEnter(Collision collision)

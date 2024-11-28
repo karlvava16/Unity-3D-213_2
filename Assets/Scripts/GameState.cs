@@ -159,5 +159,7 @@ public class GameState
     #endregion
 
 
+    #region Game events
 
+    #endregion
 }
