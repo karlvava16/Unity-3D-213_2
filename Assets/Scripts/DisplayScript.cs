@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DisplayScriipt : MonoBehaviour
+public class DisplayScript : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI clock;
     private Image keyImage;

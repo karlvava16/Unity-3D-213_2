@@ -8,13 +8,13 @@ public class PlayerScript : MonoBehaviour
     private InputAction moveAction;
     private Rigidbody rb;
     private Vector3 correctedForward;
-    private AudioSource hitlSound;
+    private AudioSource[] audioSources;
 
     private void Start()
     {
         moveAction = InputSystem.actions.FindAction("Move");
         rb = GetComponent<Rigidbody>();
-        hitlSound = GetComponent<AudioSource>();
+        audioSources = GetComponents<AudioSource>();
         GameState.Subscribe(OnEffectsVolumeChanged, nameof(GameState.effectsVolume), nameof(GameState.isMuted));
         OnEffectsVolumeChanged();
     }
@@ -36,26 +36,34 @@ correctedForward * moveValue.y);
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Wall"))
-
         {
-            if (!hitlSound.isPlaying)
+            if (!audioSources[0].isPlaying)
             {
 
-                hitlSound.volume = GameState.effectsVolume;
-                hitlSound.Play();
+                audioSources[0].volume = GameState.effectsVolume;
+                audioSources[0].Play();
+            }
+        }
+        if (collision.gameObject.CompareTag("Key"))
+        {
+            if (!audioSources[1].isPlaying)
+            {
+
+                audioSources[1].volume = GameState.effectsVolume;
+                audioSources[1].Play();
             }
         }
     }
 
     private void OnEffectsVolumeChanged()
     {
-        hitlSound.volume = GameState.isMuted ? 0.0f : GameState.effectsVolume;
+        audioSources[0].volume = GameState.isMuted ? 0.0f : GameState.effectsVolume;
+        audioSources[1].volume = GameState.isMuted ? 0.0f : GameState.effectsVolume;
     }
 
 
     private void OnDestroy()
     {
         GameState.Unsubscribe(OnDestroy, nameof(GameState.effectsVolume), nameof(GameState.isMuted));
-
     }
 }
