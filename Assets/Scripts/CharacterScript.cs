@@ -44,7 +44,7 @@ public class CharacterScript : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameState.UnSubscribe(OnAmbientVolumeChanged, nameof(GameState.ambientVolume), nameof(GameState.ambientVolume));
+        GameState.Unsubscribe(OnAmbientVolumeChanged, nameof(GameState.ambientVolume), nameof(GameState.ambientVolume));
 
     }
 }

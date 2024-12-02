@@ -55,7 +55,7 @@ correctedForward * moveValue.y);
 
     private void OnDestroy()
     {
-        GameState.UnSubscribe(OnDestroy, nameof(GameState.effectsVolume), nameof(GameState.isMuted));
+        GameState.Unsubscribe(OnDestroy, nameof(GameState.effectsVolume), nameof(GameState.isMuted));
 
     }
 }

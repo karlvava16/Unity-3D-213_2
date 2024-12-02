@@ -3,163 +3,135 @@ using System.Collections.Generic;
 
 public class GameState
 {
+    public static Dictionary<string, bool> collectedKeys { get; } = new();
+    private static readonly Dictionary<string, List<Action>> subscribers = new();
+    private static Dictionary<string, List<Action<string, object>>> eventListeners = new();
     public static bool isFpv { get; set; }
     public static bool isNight { get; set; }
-    public static float flashCharge { get; set; }
-    public static Dictionary<string, bool> collectedKeys { get; } = new Dictionary<string, bool>();
 
-    #region sensitivityLook
-    private static float _sensitivityLookX = 1.0f;
-    public static float sensitivityLookX
-    {
-        get => _sensitivityLookX;
-        set
-        {
-            if (_sensitivityLookX != value)
-            {
-                _sensitivityLookX = value;
-                NotifySubscribers(nameof(sensitivityLookX));
-            }
-        }
-    }
-
-    private static float _sensitivityLookY = 1.0f;
-    public static float sensitivityLookY
-    {
-        get => _sensitivityLookY;
-        set
-        {
-            if (_sensitivityLookY != value)
-            {
-                _sensitivityLookY = value;
-                NotifySubscribers(nameof(sensitivityLookY));
-            }
-        }
-    }
-
-    #endregion
-
-    #region effectsVolume
-
-    private static float _effectsVolume = 1.0f;
-
+    private static float effectsvolume = 1.0f, ambientvolume = 1.0f, sensitivityx = 3.5f, sensitivityy = 3.5f;
+    private static bool ismuted = false;
     public static float effectsVolume
     {
-        get => _effectsVolume;
+        get => effectsvolume;
         set
         {
-            if (_effectsVolume != value)
+            if (effectsvolume != value)
             {
-                _effectsVolume = value;
-                NotifySubscribers(nameof(effectsVolume));
+                effectsvolume = value;
+                Notify(nameof(effectsVolume));
             }
         }
     }
-
-    #endregion
-
-    #region ambientVolume
-
-    private static float _ambientVolume = 1.0f;
-
     public static float ambientVolume
     {
-        get => _ambientVolume;
+        get => ambientvolume;
         set
         {
-            if (_ambientVolume != value)
+            if (ambientvolume != value)
             {
-                _ambientVolume = value;
-                NotifySubscribers(nameof(ambientVolume));
+                ambientvolume = value;
+                Notify(nameof(ambientVolume));
             }
         }
     }
-    #endregion
-
-    #region isMuted ( Mute All )
-    private static bool _isMuted = false;
     public static bool isMuted
     {
-        get => _isMuted;
+        get => ismuted;
         set
         {
-
-            if (_isMuted != value)
-
-                _isMuted = value;
-            NotifySubscribers(nameof(isMuted));
-
-        }
-    }
-    #endregion
-
-
-    #region ChangeNotifier
-
-    private static readonly Dictionary<string, List<Action>> subscribers =
-        new Dictionary<string, List<Action>>();
-
-    private static void NotifySubscribers(String propertyName)
-    {
-        if (subscribers.ContainsKey(propertyName))
-        {
-            foreach (var action in subscribers[propertyName])
+            if (ismuted != value)
             {
-                action();
+                ismuted = value;
+                Notify(nameof(isMuted));
+                Notify(nameof(effectsVolume));
             }
         }
     }
-    public static void Subscribe(string propertyName, Action action)
+    public static float sensitivityLookX
     {
-        if (!subscribers.ContainsKey(propertyName))
+        get => sensitivityx;
+        set
         {
-            subscribers[propertyName] = new List<Action>();
+            if (sensitivityx != value)
+            {
+                sensitivityx = value;
+                Notify(nameof(sensitivityLookX));
+            }
         }
-        subscribers[propertyName].Add(action);
+    }
+    public static float sensitivityLookY
+    {
+        get => sensitivityy;
+        set
+        {
+            if (sensitivityy != value)
+            {
+                sensitivityy = value;
+                Notify(nameof(sensitivityLookY));
+            }
+        }
     }
 
+    public static void TriggerKeyEvent(string keyName, bool isInTime)
+    {
+        var payload = new Dictionary<string, object> {
+            { "KeyName", keyName },
+            { "IsInTime", isInTime }
+        };
+        TriggerEvent(keyName, payload);
+    }
+    public static void TriggerEvent(string type, object payload = null)
+    {
+        if (eventListeners.ContainsKey(type))
+        {
+            foreach (var eventListener in eventListeners[type]) eventListener(type, payload);
+        }
+        if (eventListeners.ContainsKey("Broadcast"))
+        {
+            foreach (var eventListener in eventListeners["Broadcast"]) eventListener(type, payload);
+        }
+    }
+    public static void SubscribeTrigger(Action<string, object> action, params string[] types)
+    {
+        if (types.Length == 0) types = new string[1] { "Broadcast" };
+        foreach (var type in types)
+        {
+            if (!eventListeners.ContainsKey(type)) eventListeners[type] = new List<Action<string, object>>();
+            eventListeners[type].Add(action);
+        }
+    }
+    public static void UnsubscribeTrigger(Action<string, object> action, params string[] types)
+    {
+        if (types.Length == 0) types = new string[1] { "Broadcast" };
+        foreach (var type in types)
+        {
+            if (!eventListeners.ContainsKey(type))
+            {
+                eventListeners[type].Remove(action);
+                if (eventListeners[type].Count == 0) eventListeners.Remove(type);
+            }
+        }
+    }
+    private static void Notify(string propertyName)
+    {
+        if (subscribers.ContainsKey(propertyName)) subscribers[propertyName].ForEach(action => action());
+    }
     public static void Subscribe(Action action, params string[] propertyNames)
     {
-        if (propertyNames.Length == 0)
-        {
-            throw new ArgumentException(
-                                        $"{nameof(propertyNames)} must have at least 1 value");
-        }
-
+        if (propertyNames.Length == 0) throw new ArgumentException($"{nameof(propertyNames)} must have at least 1 value");
         foreach (var propertyName in propertyNames)
         {
-            Subscribe(propertyName, action);
-        }
-
-    }
-
-    public static void UnSubscribe(string propertyName, Action action)
-    {
-        if (!subscribers.ContainsKey(propertyName))
-        {
-            subscribers[propertyName].Remove(action);
-
+            if (!subscribers.ContainsKey(propertyName)) subscribers[propertyName] = new List<Action>();
+            subscribers[propertyName].Add(action);
         }
     }
-
-    public static void UnSubscribe(Action action, params string[] propertyNames)
+    public static void Unsubscribe(Action action, params string[] propertyNames)
     {
-        if (propertyNames.Length == 0)
-        {
-            throw new ArgumentException(
-                                        $"{nameof(propertyNames)} must have at least 1 value");
-        }
-
+        if (propertyNames.Length == 0) throw new ArgumentException($"{nameof(propertyNames)} must have at least 1 value");
         foreach (var propertyName in propertyNames)
         {
-            UnSubscribe(propertyName, action);
+            if (subscribers.ContainsKey(propertyName)) subscribers[propertyName].Remove(action);
         }
-
     }
-    #endregion
-
-
-    #region Game events
-
-    #endregion
 }

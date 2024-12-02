@@ -97,7 +97,7 @@ public class CameraScript : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameState.UnSubscribe(OnSensitivityChanged,
+        GameState.Unsubscribe(OnSensitivityChanged,
         nameof(GameState.sensitivityLookX),
         nameof(GameState.sensitivityLookY));
     }
