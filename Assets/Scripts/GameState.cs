@@ -73,6 +73,31 @@ public class GameState
         }
     }
 
+    #region difficulty
+    private static GameDifficulty _difficulty = GameDifficulty.Middle;
+    public static GameDifficulty difficulty
+
+    {
+        get => _difficulty;
+        set
+
+        {
+            if (_difficulty != value)
+            {
+                _difficulty = value;
+                NotifySubscribers(nameof(difficulty));
+            }
+        }
+    }
+
+    public enum GameDifficulty
+    {
+        Easy,
+        Middle,
+        Hard
+    }
+    #endregion
+
     public static void TriggerKeyEvent(string keyName, bool isInTime)
     {
         var payload = new Dictionary<string, object> {
@@ -81,6 +106,19 @@ public class GameState
         };
         TriggerEvent(keyName, payload);
     }
+
+    private static void NotifySubscribers(String propertyName)
+    {
+        if (subscribers.ContainsKey(propertyName))
+        {
+            foreach (var action in subscribers[propertyName])
+            {
+                action();
+            }
+            // subscribers[propertyName].ForEach(action => action());
+        }
+    }
+
     public static void TriggerEvent(string type, object payload = null)
     {
         if (eventListeners.ContainsKey(type))

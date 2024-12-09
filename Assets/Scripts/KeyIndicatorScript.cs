@@ -1,27 +1,40 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class KeyIndicatorScript : MonoBehaviour {
+public class KeyIndicatorScript : MonoBehaviour
+{
     [SerializeField] private float keyTimeout = 3.0f;
     private float activeTime;
     private Image indicator;
     private GameObject content;
     private KeyPointScript parentScript;
 
-    void Start() {
+    void Start()
+    {
         parentScript = transform.parent.GetComponent<KeyPointScript>();
         parentScript.isInTime = true;
         indicator = transform.Find("Content/Indicator").gameObject.GetComponent<Image>();
         content = transform.Find("Content").gameObject;
         content.SetActive(false);
     }
-    void Update() {
-        if (content.activeInHierarchy) {
-            activeTime += Time.deltaTime;
-            if (activeTime >= keyTimeout) {
+    void Update()
+    {
+        if (content.activeInHierarchy)
+        {
+            activeTime += Time.deltaTime * (GameState.difficulty switch
+            {
+                GameState.GameDifficulty.Easy => 0.5f,
+                GameState.GameDifficulty.Middle => 1.0f,
+                GameState.GameDifficulty.Hard => 1.5f,
+                _ => 1.0f
+            });
+            if (activeTime >= keyTimeout)
+            {
                 parentScript.isInTime = false;
                 gameObject.SetActive(false);
-            } else {
+            }
+            else
+            {
                 indicator.fillAmount = (keyTimeout - activeTime) / keyTimeout;
                 indicator.color = new Color(1 - indicator.fillAmount, indicator.fillAmount, 0.2f, 0.75f);
             }
